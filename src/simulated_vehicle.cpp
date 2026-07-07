@@ -62,6 +62,8 @@ SimulatedVehicle::load_parameters()
   utm_zone = ego_vehicle_start_utm_zone_number;
   utm_letter = ego_vehicle_start_utm_zone_letter;
 
+  sensor_range = declare_parameter<double>("sensor_range", 1000.0 );
+
   // Noise parameters
   pos_stddev   = declare_parameter<double>( "position_noise_stddev", 0.0 );
   vel_stddev   = declare_parameter<double>( "velocity_noise_stddev", 0.0 );
@@ -250,13 +252,13 @@ SimulatedVehicle::publish_vehicle_states()
   traffic_participant.state.time           = current_time.seconds();
   traffic_participant.classification = dynamics::TrafficParticipantClassification::CAR;
   auto noisy_state                         = current_vehicle_state;
+  noisy_state.time = now().seconds();
   auto generator                           = std::default_random_engine( std::chrono::system_clock::now().time_since_epoch().count() );
   noisy_state.x                           += pos_noise( generator );
   noisy_state.y                           += pos_noise( generator );
   noisy_state.vx                          += vel_noise( generator );
   noisy_state.yaw_angle                   += yaw_noise( generator );
   noisy_state.frame_id = "UTM" + std::to_string(utm_zone) + utm_letter;
-;
 
   publisher_vehicle_state_dynamic->publish( noisy_state );
 
